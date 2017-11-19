@@ -1,7 +1,24 @@
 #build-script for mac
 
 #xcode CLI
-#xcode-select --install;
+echo "Checking Xcode CLI tools"
+# Only run if the tools are not installed yet
+# To check that try to print the SDK path
+xcode-select -p &> /dev/null
+if [ $? -ne 0 ]; then
+  echo "Xcode CLI tools not found. Installing them..."
+  touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress;
+  PROD=$(softwareupdate -l |
+    grep "\*.*Command Line" |
+    head -n 1 | awk -F"*" '{print $2}' |
+    sed -e 's/^ *//' |
+    tr -d '\n')
+  softwareupdate -i "$PROD";
+  softwareupdate -l;
+  softwareupdate -i -a;
+else
+  echo "Xcode CLI tools OK"
+fi
 
 #homebrew
 echo "installing home brew"
@@ -19,20 +36,18 @@ echo "installing node"
 brew install node;
 echo "installing java"
 brew cask install java;
-java -version
-javac -version
-
-echo "installing iTerm2"
-brew cask install iterm2;
-echo "installing zsh-completions"
-brew install zsh zsh-completions;
+java -version;
+javac -version;
 
 echo "installing git & setting up config"
 brew install git;
 git --version;
 
-read "Enter Git Global username" username
-read "Enter Git Global email" email
+printf "Enter Git Global username" 
+read username
+printf "Enter Git Global email" 
+read email
+
 git config --global user.name $username;
 git config --global user.email $email;
 
@@ -50,6 +65,10 @@ echo 'export PATH="$HOME/.jenv/bin:$PATH"' >> ~/.zshrc;
 echo 'eval "$(jenv init -)"' >> ~/.zshrc;
 
 #utils
+echo "installing iTerm2"
+brew cask install iterm2;
+echo "installing zsh-completions"
+brew install zsh zsh-completions;
 echo "installing dotnet"
 brew cask install dotnet;
 echo "installing parallels"
@@ -67,7 +86,7 @@ brew cask install firefox;
 echo "installing Chrome"
 brew cask install google-chrome;
 echo "installing adobe reader"
-brew cask install adobe-reader;
+brew cask install adobe-acrobat-reader;
 echo "installing skitch"
 brew cask install skitch;
 echo "installing cyberduck"
@@ -144,10 +163,6 @@ echo "installing docker"
 brew install docker;
 echo "installing kitematic"
 brew cask install kitematic;
-
-# Link Cask Apps to Alfred
-echo "installing Link Cask Apps to Alfred"
-brew cask alfred link
 
 # cleanup
 echo "Cleaning Up Home brew"
